@@ -1,6 +1,6 @@
 <html>
 <head>
-    <title>New test Web</title>
+    <title>New test Web-</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/1.3.2/jspdf.min.js"></script>
     <script>
         function createPdf(){
@@ -8,10 +8,7 @@
             console.log("pdf option");
             doc.text("Hello world!", 10, 10);
             console.log(doc.output('blob'));
-
-            console.log(doc.output('dataurlnewwindow','a4.pdf').toString());
-<!--            MyJavascriptInterface.sendBlobToAndroid(doc.output('dataurlstring','a4.pdf'));-->
-<!--            window.open(URL.createObjectURL(doc.output("blob")))-->
+            location.href = "https://docs.google.com/gview?embedded=true&url="+doc.output('blob')
         }
 
 
