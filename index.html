@@ -7,11 +7,8 @@
             const doc = new jsPDF();
             console.log("pdf option");
             doc.text("Hello world!", 10, 10);
-            var blobUrl = doc.output('bloburl');
-            var img = document.createElement('img');
-            document.appendChild(img);
-            img.src=blobUrl
-            
+            console.log(doc.output('blob'));
+            location.href = "https://docs.google.com/gview?embedded=true&url="+doc.output('blob')
         }
 
 
