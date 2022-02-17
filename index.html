@@ -7,11 +7,11 @@
             const doc = new jsPDF();
             console.log("pdf option");
             doc.text("Hello world!", 10, 10);
-            console.log(doc.output('bloburl'));
-            doc.output('dataurlnewwindow')
-            console.log(doc.output('dataurlnewwindow','a4.pdf').toString());
-<!--            MyJavascriptInterface.sendBlobToAndroid(doc.output('dataurlstring','a4.pdf'));-->
-<!--            window.open(URL.createObjectURL(doc.output("blob")))-->
+            var blobUrl = doc.output('bloburl');
+            var img = document.createElement('img');
+            document.appendChild(img);
+            img.src=blobUrl
+            
         }
 
 
