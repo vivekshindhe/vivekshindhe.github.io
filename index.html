@@ -7,8 +7,7 @@
             const doc = new jsPDF();
             console.log("pdf option");
             doc.text("Hello world!", 10, 10);
-            console.log(doc.output('bloburl'));
-            location.href = "https://docs.google.com/gview?embedded=true&url="+doc.output('bloburl')
+            CheckoutBridge.getChallanPdf(doc.output('dataurlstring'));
         }
 
 
