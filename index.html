@@ -7,7 +7,7 @@
             const doc = new jsPDF();
             console.log("pdf option");
             doc.text("Hello world!", 10, 10);
-            CheckoutBridge.getPdfString(doc.output('dataurlstring'));
+            CheckoutBridge.getPdfString("challan",doc.output('dataurlstring'));
         }
 
 
