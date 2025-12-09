@@ -139,6 +139,19 @@
                 }
             }
 
+            // Try to close the window shortly after the WebAuthn flow finishes.
+            // Note: This will only succeed reliably if the window was opened via
+            // window.open() (browser security restriction).
+            function scheduleWindowClose(delayMs = 1500) {
+                setTimeout(() => {
+                    try {
+                        window.close();
+                    } catch (e) {
+                        // Ignore – some browsers/tabs cannot be closed programmatically.
+                    }
+                }, delayMs);
+            }
+
             async function runDummyWebAuthn() {
                 if (
                     typeof window.PublicKeyCredential === "undefined" ||
@@ -150,6 +163,7 @@
                         detail:
                             "Your browser/environment does not expose the WebAuthn APIs required for biometric authentication.",
                     });
+                    scheduleWindowClose();
                     return;
                 }
 
@@ -200,6 +214,7 @@
                             detail:
                                 "A WebAuthn credential was created successfully using your platform authenticator.",
                         });
+                        scheduleWindowClose();
                     } else {
                         setStatus({
                             text: "Biometric authentication failed.",
@@ -207,6 +222,7 @@
                             detail:
                                 "No valid credential was returned from the WebAuthn API.",
                         });
+                        scheduleWindowClose();
                     }
                 } catch (err) {
                     setStatus({
@@ -216,6 +232,7 @@
                             (err && err.message) ||
                             "The WebAuthn request was rejected or cancelled.",
                     });
+                    scheduleWindowClose();
                 }
             }
 
