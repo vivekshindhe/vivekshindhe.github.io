@@ -1,4 +1,231 @@
-<html>
-  Hello world
-  <a href="https://vivek9604.github.io">Go To Another Website</a>
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>Dummy Biometric Auth Demo</title>
+        <style>
+            body {
+                margin: 0;
+                padding: 0;
+                font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI",
+                    sans-serif;
+                background: #0f172a;
+                color: #e5e7eb;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                min-height: 100vh;
+            }
+
+            .card {
+                background: #020617;
+                border-radius: 16px;
+                padding: 32px 28px;
+                box-shadow: 0 24px 60px rgba(15, 23, 42, 0.9);
+                max-width: 420px;
+                width: 100%;
+                border: 1px solid rgba(148, 163, 184, 0.35);
+            }
+
+            .title {
+                font-size: 1.25rem;
+                font-weight: 600;
+                margin-bottom: 6px;
+            }
+
+            .subtitle {
+                font-size: 0.9rem;
+                color: #9ca3af;
+                margin-bottom: 18px;
+            }
+
+            .status-label {
+                font-size: 0.75rem;
+                text-transform: uppercase;
+                letter-spacing: 0.08em;
+                color: #9ca3af;
+                margin-bottom: 8px;
+            }
+
+            .status-pill {
+                display: inline-flex;
+                align-items: center;
+                gap: 8px;
+                padding: 6px 12px;
+                border-radius: 999px;
+                font-size: 0.85rem;
+                font-weight: 500;
+                border: 1px solid rgba(148, 163, 184, 0.25);
+                background: rgba(15, 23, 42, 0.9);
+            }
+
+            .dot {
+                width: 8px;
+                height: 8px;
+                border-radius: 999px;
+            }
+
+            .dot.pending {
+                background: #eab308;
+                box-shadow: 0 0 0 4px rgba(234, 179, 8, 0.18);
+            }
+
+            .dot.success {
+                background: #22c55e;
+                box-shadow: 0 0 0 4px rgba(34, 197, 94, 0.18);
+            }
+
+            .dot.error {
+                background: #ef4444;
+                box-shadow: 0 0 0 4px rgba(239, 68, 68, 0.18);
+            }
+
+            .details {
+                margin-top: 16px;
+                font-size: 0.8rem;
+                color: #9ca3af;
+                line-height: 1.5;
+            }
+
+            .details code {
+                font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas,
+                    "Liberation Mono", "Courier New", monospace;
+                font-size: 0.78rem;
+                background: rgba(15, 23, 42, 0.8);
+                padding: 2px 6px;
+                border-radius: 6px;
+                border: 1px solid rgba(148, 163, 184, 0.3);
+            }
+        </style>
+    </head>
+    <body>
+        <div class="card">
+            <div class="title">Dummy Biometric Authentication</div>
+            <div class="subtitle">
+                A WebAuthn demo that runs automatically on page load.
+            </div>
+
+            <div class="status-label">Biometric status</div>
+            <div class="status-pill" id="authStatus">
+                <span class="dot pending" id="authDot"></span>
+                <span id="authText">Waiting for WebAuthn platform authenticator…</span>
+            </div>
+
+            <div class="details" id="authDetails">
+                This is a **non-production** WebAuthn example. It generates a
+                client‑side only challenge and attempts
+                <code>navigator.credentials.create()</code> on load. Works best on
+                <code>https://</code> or <code>http://localhost</code> with a
+                platform authenticator (Touch ID / Windows Hello / etc).
+            </div>
+        </div>
+
+        <script>
+            function setStatus({ text, variant, detail }) {
+                const textEl = document.getElementById("authText");
+                const dotEl = document.getElementById("authDot");
+                const detailsEl = document.getElementById("authDetails");
+
+                if (!textEl || !dotEl || !detailsEl) return;
+
+                textEl.textContent = text;
+
+                dotEl.classList.remove("pending", "success", "error");
+                dotEl.classList.add(variant);
+
+                if (detail) {
+                    detailsEl.textContent = detail;
+                }
+            }
+
+            async function runDummyWebAuthn() {
+                if (
+                    typeof window.PublicKeyCredential === "undefined" ||
+                    !navigator.credentials
+                ) {
+                    setStatus({
+                        text: "WebAuthn not supported in this browser.",
+                        variant: "error",
+                        detail:
+                            "Your browser/environment does not expose the WebAuthn APIs required for biometric authentication.",
+                    });
+                    return;
+                }
+
+                try {
+                    // Generate a dummy challenge & user id – purely client-side for demo purposes.
+                    const challenge = new Uint8Array(32);
+                    const userId = new Uint8Array(16);
+                    window.crypto.getRandomValues(challenge);
+                    window.crypto.getRandomValues(userId);
+
+                    const publicKey = {
+                        challenge,
+                        rp: {
+                            name: "Dummy Biometric Demo",
+                        },
+                        user: {
+                            id: userId,
+                            name: "demo@webauthn.local",
+                            displayName: "Demo User",
+                        },
+                        pubKeyCredParams: [
+                            // ES256
+                            { type: "public-key", alg: -7 },
+                        ],
+                        authenticatorSelection: {
+                            authenticatorAttachment: "platform", // Prefer built‑in biometric
+                            userVerification: "preferred",
+                        },
+                        timeout: 60000,
+                        attestation: "none",
+                    };
+
+                    setStatus({
+                        text: "Waiting for biometric prompt…",
+                        variant: "pending",
+                    });
+
+                    // NOTE: In many browsers this requires a user gesture; on-load calls
+                    // may be blocked or silently rejected. This is purely for demo.
+                    const credential = await navigator.credentials.create({
+                        publicKey,
+                    });
+
+                    if (credential && credential.type === "public-key") {
+                        setStatus({
+                            text: "Biometric authentication successful.",
+                            variant: "success",
+                            detail:
+                                "A WebAuthn credential was created successfully using your platform authenticator.",
+                        });
+                    } else {
+                        setStatus({
+                            text: "Biometric authentication failed.",
+                            variant: "error",
+                            detail:
+                                "No valid credential was returned from the WebAuthn API.",
+                        });
+                    }
+                } catch (err) {
+                    setStatus({
+                        text: "Biometric authentication failed.",
+                        variant: "error",
+                        detail:
+                            (err && err.message) ||
+                            "The WebAuthn request was rejected or cancelled.",
+                    });
+                }
+            }
+
+            window.addEventListener("load", () => {
+                setStatus({
+                    text: "Initializing WebAuthn biometric flow…",
+                    variant: "pending",
+                });
+                runDummyWebAuthn();
+            });
+        </script>
+    </body>
 </html>
